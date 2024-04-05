@@ -31,7 +31,10 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('newOnlineUser')
-  addOnlineUser(@MessageBody() data: any, @ConnectedSocket() client: Socket): any {
+  addOnlineUser(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ): any {
     // NOTE add user ketika on masuk ke app
     !this.onlineUsers.some((user) => user.username === data.username) &&
       this.onlineUsers.push({ username: data, socket_id: client.id });
@@ -39,14 +42,25 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('getOnlineUser')
-  getOnlineUser(){
-    this.logger.debug("online user:",this.onlineUsers)
+  getOnlineUser() {
+    this.logger.debug('online user:', this.onlineUsers);
   }
 
   @SubscribeMessage('sendNotif')
-  sendNotif(@MessageBody() data: any){
+  sendNotif(@MessageBody() data: any) {
     const user = this.onlineUsers.find((user) => data === user.username);
-    this.server.to(user.socket_id).emit('getNotif', `hey ${data}`)
-    // TODO implementasi ke frontend untuk lonceng notif
+    this.server.to(user.socket_id).emit('getNotif', `hey ${data}`);
+  }
+
+  @SubscribeMessage('removeOnlineUser')
+  removeUser(@MessageBody() data: any) {
+    const curUser = this.onlineUsers.filter(
+      (user) => user.username !== data,
+    );
+    this.onlineUsers = []
   }
 }
+
+// TODO install prisma 
+// TODO buat fitur auth
+// TODO buat buat fitur private chat

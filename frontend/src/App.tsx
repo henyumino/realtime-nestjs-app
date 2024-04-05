@@ -13,6 +13,7 @@ export default function App() {
 	const [user, setUser] = useState<any>("");
 	const [username, setUsername] = useState("");
 	const [receiver, setReceiver] = useState("");
+  const [notif, setNotif] = useState(false)
 
 	// function sendMsg() {
 	// 	socket.emit("send_chat", { id: `${Math.random()}`, msg: data });
@@ -20,7 +21,7 @@ export default function App() {
 	// }
 
 	function getOnlineUser() {
-		socket.emit("getOnlineUser", (data) => console.log(data));
+		socket.emit("getOnlineUser", (data: any) => console.log(data));
 	}
 
   function sendNotif(){
@@ -45,18 +46,22 @@ export default function App() {
 
 		function onDisconnect() {
 			setIsConnected(false);
+      socket.emit('removeOnlineUser', user)
 		}
 
 		socket.on("connect", onConnect);
 		socket.on("disconnect", onDisconnect);
 		socket.on("getNotif", (data: any) => {
 			console.log(data)
+      setNotif(true)
 		});
+    window.addEventListener('beforeunload', onDisconnect);
 
 		return () => {
 			socket.off("connect", onConnect);
 			socket.off("disconnect", onDisconnect);
 			socket.off("getNotif"); 
+      window.addEventListener('beforeunload', onDisconnect);
 		};
 	}, []);
 
@@ -65,7 +70,7 @@ export default function App() {
 
 	return (
 		<>
-			<NavbarDark />
+			<NavbarDark notif={notif} setNotif={setNotif} />
 			<p className="text-2xl text-red-500">asd</p>
 			{isConnected ? "connected" : "not connect"}
 			<div>
