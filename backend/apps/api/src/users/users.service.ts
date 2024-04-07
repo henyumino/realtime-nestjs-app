@@ -58,23 +58,25 @@ export class UsersService {
       throw new ConflictException('email already exist');
     }
 
-    // const userSalt = bcrypt.genSaltSync();
-    // const user = {
-    //   email: email,
-    //   fullname: fullname,
-    //   salt: userSalt,
-    //   password: bcrypt.hashSync(password, userSalt),
-    // };
+    const userSalt = await bcrypt.genSalt();
+    const user = {
+      email: email,
+      fullname: fullname,
+      salt: userSalt,
+      password: await bcrypt.hash(password, userSalt),
+    };
 
-    // try {
-    //   await this.prisma.user.create({
-    //     data: user,
-    //   });
-    //   this.logger.debug('user created');
-    // } catch (error) {
-    //   this.logger.debug(error);
-    //   throw new InternalServerErrorException();
-    // }
+    this.logger.debug(user)
+
+    try {
+      await this.prisma.user.create({
+        data: user,
+      });
+      this.logger.debug('user created');
+    } catch (error) {
+      this.logger.debug(error);
+      throw new InternalServerErrorException();
+    }
   }
 }
 

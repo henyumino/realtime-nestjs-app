@@ -10,6 +10,11 @@ ARG NODE_VERSION=20.12.1
 
 FROM node:${NODE_VERSION}-alpine3.19
 
+# RUN apk update
+
+# get alpine bcrypt works
+# RUN apk --no-cache add --virtual builds-deps build-base python3 
+
 # Use production node environment by default.
 # ENV NODE_ENV production
 
@@ -25,7 +30,6 @@ RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=cache,target=/root/.npm \
     npm ci 
 
-RUN apk update && apk --no-cache add openssl
 
 # Copy the rest of the source files into the image.
 COPY . .
@@ -33,8 +37,13 @@ COPY . .
 # Run the application as a non-root user.
 # USER node
 
+# RUN npm rebuild bcrypt --build-from-source
+
+# remove unused build file
+# RUN apk del builds-deps
+
 # Expose the port that the application listens on.
-EXPOSE 5000
+EXPOSE 5001
 
 # Run the application.
-CMD npm run start:dev api
+CMD npm run start:dev chat

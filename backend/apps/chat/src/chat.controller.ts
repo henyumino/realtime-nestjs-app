@@ -1,12 +1,17 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Logger } from '@nestjs/common';
 import { ChatService } from './chat.service';
+import * as bcrypt from 'bcrypt';
 
 @Controller()
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
+  private logger = new Logger('chat controller')
+
   @Get()
-  getHello(): string {
-    return this.chatService.getHello();
+  async getHello() {
+    const test = await bcrypt.genSalt()
+    this.logger.debug(test)
+    return 'success'
   }
 }

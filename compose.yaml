@@ -27,6 +27,20 @@ services:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
 
+  chat:
+    container_name: chat-service
+    restart: unless-stopped
+    build:
+      context: ./backend
+      dockerfile: ./apps/chat/Dockerfile
+    ports:
+      - 5001:5001
+    networks:
+      - app-network
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+
   mysql_db: 
     image: 'mysql:latest'
     restart: always
