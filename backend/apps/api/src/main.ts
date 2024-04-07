@@ -6,5 +6,3 @@ async function bootstrap() {
   await app.listen(5000);
 }
 bootstrap();
-
-// TODO create websocket & add websocket implementation to react

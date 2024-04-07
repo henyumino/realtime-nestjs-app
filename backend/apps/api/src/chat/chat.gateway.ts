@@ -61,6 +61,4 @@ export class ChatGateway {
   }
 }
 
-// TODO install prisma 
-// TODO buat fitur auth
 // TODO buat buat fitur private chat
