@@ -1,6 +1,7 @@
 import { Controller, Get, Logger } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import * as bcrypt from 'bcrypt';
+import { Ctx, MessagePattern, Payload, RmqContext } from '@nestjs/microservices';
 
 @Controller()
 export class ChatController {
@@ -14,4 +15,14 @@ export class ChatController {
     this.logger.debug(test)
     return 'success'
   }
+
+  @MessagePattern({cmd: 'send-chat'})
+  async testMicro(@Payload() data: any, @Ctx() context: RmqContext){
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+
+    this.logger.debug(data);
+    channel.ack(originalMsg);
+  }
+
 }

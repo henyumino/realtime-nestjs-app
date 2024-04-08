@@ -26,6 +26,8 @@ services:
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
+    depends_on:
+      - rabbitmq
 
   chat:
     container_name: chat-service
@@ -40,6 +42,20 @@ services:
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    volumes:
+      - /var/lib/rabbitmq
+    networks:
+      - app-network
 
   mysql_db: 
     image: 'mysql:latest'
