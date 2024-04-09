@@ -19,4 +19,3 @@ export class AuthController {
     return this.authService.register(req);
   }
 }
-// TODO connect to chat service

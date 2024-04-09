@@ -2,7 +2,8 @@ import { Controller, Get, Logger, Request, UseGuards } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import * as bcrypt from 'bcrypt';
 import { Ctx, MessagePattern, Payload, RmqContext } from '@nestjs/microservices';
-import { JwtAuthGuard } from 'apps/api/src/auth/guard/jwt-auth.guard';
+import { JwtAuthGuard } from '@app/common/auth/guard/jwt-auth.guard';
+import { GetUser } from 'apps/api/src/users/decorator/get-user.decorator';
 
 @Controller()
 export class ChatController {
@@ -28,8 +29,10 @@ export class ChatController {
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  getProfile(@Request() req) {
-    return req.user;
+  getProfile(@Request() req, @GetUser() user) {
+    // console.log('user: ', user)
+    return user;
   }
+
 
 }
