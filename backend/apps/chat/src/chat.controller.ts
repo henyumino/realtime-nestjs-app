@@ -27,12 +27,7 @@ export class ChatController {
     channel.ack(originalMsg);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('profile')
-  getProfile(@Request() req, @GetUser() user) {
-    // console.log('user: ', user)
-    return user;
-  }
+  // TODO buat chat gateway dan connect user berdasarkan user session jwt
 
 
 }
