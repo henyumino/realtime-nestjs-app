@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ApiModule } from './api.module';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { ValidationError } from 'class-validator';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 async function bootstrap() {
   const app = await NestFactory.create(ApiModule);
@@ -20,6 +21,23 @@ async function bootstrap() {
   );
 
   app.enableCors();
+
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: ['amqp://guest:guest@rabbitmq:5672'],
+      queue: 'api_queue',
+      noAck: true,
+      queueOptions: {
+        arguments: {
+          'x-queue-type': 'quorum',
+        },
+        durable: true,
+      },
+    },
+  });
+  
+  await app.startAllMicroservices()
 
   await app.listen(5000);
 }

@@ -1,16 +1,20 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
-
+import { ClientProxy } from '@nestjs/microservices';
+import { Observable, timeout } from 'rxjs';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+  ) {}
 
   private logger = new Logger('UserService');
 
@@ -66,7 +70,7 @@ export class UsersService {
       password: await bcrypt.hash(password, userSalt),
     };
 
-    this.logger.debug(user)
+    this.logger.debug(user);
 
     try {
       await this.prisma.user.create({
@@ -79,5 +83,16 @@ export class UsersService {
     }
   }
 
-}
+  async findUserById(id: number): Promise<any> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
 
+    console.log(user)
+
+    return user;
+  }
+
+}

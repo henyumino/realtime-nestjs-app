@@ -1,33 +1,49 @@
-import { Controller, Get, Logger, Request, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Inject,
+  Logger,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { ChatService } from './chat.service';
 import * as bcrypt from 'bcrypt';
-import { Ctx, MessagePattern, Payload, RmqContext } from '@nestjs/microservices';
+import {
+  ClientProxy,
+  Ctx,
+  EventPattern,
+  MessagePattern,
+  Payload,
+  RmqContext,
+} from '@nestjs/microservices';
 import { JwtAuthGuard } from '@app/common/auth/guard/jwt-auth.guard';
 import { GetUser } from 'apps/api/src/users/decorator/get-user.decorator';
+import { firstValueFrom, lastValueFrom } from 'rxjs';
 
 @Controller()
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    @Inject('API_SERVICE') private readonly apiClient: ClientProxy,
+  ) {}
 
-  private logger = new Logger('chat controller')
+  private logger = new Logger('chat controller');
 
   @Get()
   async getHello() {
-    const test = await bcrypt.genSalt()
-    this.logger.debug(test)
-    return 'success'
+    this.apiClient.emit({cmd: 'get-user'}, 'asd');
+    return 'success';
   }
 
-  @MessagePattern({cmd: 'send-chat'})
-  async testMicro(@Payload() data: any, @Ctx() context: RmqContext){
+  @MessagePattern({ cmd: 'sendchat' })
+  async test(@Payload() data: any, @Ctx() context: RmqContext) {
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
-
-    this.logger.debug(data);
     channel.ack(originalMsg);
+    return data;
   }
 
   // TODO buat chat gateway dan connect user berdasarkan user session jwt
 
-
+  // NOTE problem ditemukan -> api gateway hanya bisa request 1 arah ke chat tidak bisa sebaliknya
 }

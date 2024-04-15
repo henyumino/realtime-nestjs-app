@@ -5,8 +5,7 @@ import { ClientProxy } from '@nestjs/microservices';
 @Controller()
 export class ApiController {
   constructor(
-    private readonly apiService: ApiService,
-    @Inject('CHAT_SERVICE') private readonly chatClient: ClientProxy,
+    private readonly apiService: ApiService
   ) {}
 
   @Get()
@@ -14,9 +13,4 @@ export class ApiController {
     return this.apiService.getHello();
   }
 
-  @Post('test')
-  async testMicro() {
-    // console.log('test')
-    this.chatClient.emit({cmd: 'send-chat'}, 'test chat')
-  }
 }

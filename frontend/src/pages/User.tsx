@@ -16,6 +16,7 @@ export default function User() {
 		socket.emit("getOnlineUser", (data: any) => console.log(data));
 	};
 
+
 	useEffect(() => {
 		const getUser = async () => {
 			try {
@@ -25,48 +26,35 @@ export default function User() {
 				if (res.status === 200) {
 					setUser(res.data);
 				}
-        
 			} catch (e: any) {
 				console.log(e);
-        if(e.response.status === 401){
-          localStorage.removeItem('access_token')
-          navigate('/')
-        }
+				if (e.response.status === 401) {
+					localStorage.removeItem("access_token");
+					navigate("/");
+				}
 			}
 		};
 		getUser();
-    socket.on("onlineUser", (data) => setOnlineUser(data));
+		socket.on("onlineUser", (data) => setOnlineUser(data));
 	}, []);
 
-	useEffect(() => {
-		function onConnect() {
-			setIsConnected(true);
-		}
+	// TODO lanjut buat private chat feature
 
+	useEffect(() => {
 		function onDisconnect() {
-      socket.emit("removeOnlineUser", user?.id);
+			socket.emit("removeOnlineUser", user?.id);
 			setIsConnected(false);
 		}
-
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
-    window.addEventListener("beforeunload", onDisconnect);
-
+		if (socket.connected && user !== null) {
+			setIsConnected(true);
+			socket.emit("addOnlineUser", user);
+		}
+		window.addEventListener("beforeunload", onDisconnect);
 		return () => {
-			socket.off("connect", onConnect);
-			socket.off("disconnect", onDisconnect);
 			window.addEventListener("beforeunload", onDisconnect);
 		};
 	}, [user]);
 
-  useEffect(() => {
-    if(user){
-      socket.emit("addOnlineUser", user);
-    }
-  }, [user])
-
-
-  // TODO lanjut buat private chat feature
 	return (
 		<>
 			Welcome : {user?.fullname} userid: {user?.id}
@@ -81,12 +69,13 @@ export default function User() {
 			>
 				log out
 			</Button>
-			<Button onClick={getOnlineUser}>get online</Button>
-      <h1 className="text-2xl">Online User:</h1>
+			{/* <Button onClick={addOnline}>add online</Button> */}
+			<h1 className="text-2xl">Online User:</h1>
 			<ul className="list-disc pl-6">
-				{onlineUser && onlineUser.map((el: any) => (
-					<li key={el.id}>{el.fullname}</li>
-				))}
+				{onlineUser &&
+					onlineUser.map((el: any) => (
+						<li key={el.id}>{el.fullname}</li>
+					))}
 			</ul>
 		</>
 	);
