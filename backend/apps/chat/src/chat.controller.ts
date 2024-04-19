@@ -43,7 +43,4 @@ export class ChatController {
     return data;
   }
 
-  // TODO buat chat gateway dan connect user berdasarkan user session jwt
-
-  // NOTE problem ditemukan -> api gateway hanya bisa request 1 arah ke chat tidak bisa sebaliknya
 }

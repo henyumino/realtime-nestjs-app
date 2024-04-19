@@ -32,6 +32,4 @@ export class UsersController {
   }
 
 
-  // NOTE: cara diatas berhasil
-
 }

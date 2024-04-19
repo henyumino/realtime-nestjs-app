@@ -20,14 +20,13 @@ export class ChatGateway {
   @WebSocketServer()
   server: Server;
 
-  constructor(
-    // private prisma: PrismaService,
-    @Inject('API_SERVICE') private apiClient: ClientProxy,
-  ) {}
+  constructor(@Inject('API_SERVICE') private apiClient: ClientProxy) {}
 
   private logger = new Logger('chat gateway');
 
   private onlineUsers = [];
+
+  private activeRoom = [];
 
   @SubscribeMessage('addOnlineUser')
   async addOnlineUser(
@@ -35,16 +34,10 @@ export class ChatGateway {
     @ConnectedSocket() client: Socket,
   ) {
     // add user ketika on masuk ke app
-    // const user = await this.prisma.user.findUnique({
-    //   where: {
-    //     id: data.id,
-    //   },
-    // });
-    // const res = await this.getUserFromUserService(data.id)
-    // console.log(res)
-    const res = this.apiClient.send({cmd:'get-user'}, data.id).pipe(timeout(5000));
-    const user = await lastValueFrom(res)
-    console.log(res)
+    const res = this.apiClient
+      .send({ cmd: 'get-user' }, data.id)
+      .pipe(timeout(5000));
+    const user = await lastValueFrom(res);
 
     if (user) {
       !this.onlineUsers.some((user) => user.id === data.id) &&
@@ -57,7 +50,6 @@ export class ChatGateway {
 
     this.server.emit('onlineUser', this.onlineUsers);
   }
-
 
   @SubscribeMessage('getOnlineUser')
   getOnlineUser() {
@@ -77,4 +69,33 @@ export class ChatGateway {
     this.onlineUsers = curUser;
     this.server.emit('onlineUser', this.onlineUsers);
   }
+
+  // join room for private chat
+  @SubscribeMessage('joinRoom')
+  createRoom(@MessageBody() data: any, @ConnectedSocket() socket: Socket) {
+    socket.join(data)
+    console.log(`socket ${socket.id} room ${data} joined`)
+  }
+
+  //send private msg
+  @SubscribeMessage('sendChat')
+  sendPrivateMsg(@MessageBody() data: any, @ConnectedSocket() socket: Socket){
+    // emit private chat dari sini
+    console.log(data)
+    this.server.to('123').emit("getChat", data)
+  }
+
+  // @SubscribeMessage('getChat')
+  // getPrivateChat(@MessageBody() data: any, @ConnectedSocket() socket: Socket){
+
+  // }
 }
+
+
+
+/* 
+  TODO
+  flowchart private chat:
+  1. disamping user list ada tombol private chat ketika diklik maka akan request ke server untuk membuat 1 room berdasarkan 2 user yang akan join 
+  2. maka gateway.ts akan membuat room dan menjoinkan 2 user tersebut
+*/

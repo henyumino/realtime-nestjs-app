@@ -29,5 +29,3 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
   exports: [UsersService],
 })
 export class UsersModule {}
-
-// TODO temukan solusi client.send tidak works

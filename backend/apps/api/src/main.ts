@@ -44,8 +44,3 @@ async function bootstrap() {
 bootstrap();
 
 
-/* 
-  TODO:
-  - coba untuk pecah auth service ke standalone service supaya chat service bisa akses user dengan mengirimkan access token
-  - atau coba menggunakan rabbitmq request user dari chat -> api gateway untuk mendapatkan user berdasarkan access token
-*/
