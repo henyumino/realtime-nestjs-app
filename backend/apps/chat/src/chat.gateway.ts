@@ -73,16 +73,16 @@ export class ChatGateway {
   // join room for private chat
   @SubscribeMessage('joinRoom')
   createRoom(@MessageBody() data: any, @ConnectedSocket() socket: Socket) {
-    socket.join(data)
-    console.log(`socket ${socket.id} room ${data} joined`)
+    socket.join(data);
+    console.log(`socket ${socket.id} room ${data} joined`);
   }
 
   //send private msg
   @SubscribeMessage('sendChat')
-  sendPrivateMsg(@MessageBody() data: any, @ConnectedSocket() socket: Socket){
+  sendPrivateMsg(@MessageBody() data: any, @ConnectedSocket() socket: Socket) {
     // emit private chat dari sini
-    console.log(data)
-    this.server.to('123').emit("getChat", data)
+    console.log(data);
+    this.server.to(data.roomId).emit('getChat', data);
   }
 
   // @SubscribeMessage('getChat')
@@ -90,8 +90,6 @@ export class ChatGateway {
 
   // }
 }
-
-
 
 /* 
   TODO
