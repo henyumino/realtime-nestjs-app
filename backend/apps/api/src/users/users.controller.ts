@@ -10,12 +10,11 @@ import {
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
+import { User } from '@prisma/client';
 
 @Controller('users')
 export class UsersController {
-  constructor(
-    private readonly userService: UsersService,
-  ) {}
+  constructor(private readonly userService: UsersService) {}
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
@@ -23,13 +22,17 @@ export class UsersController {
     return req;
   }
 
-  @MessagePattern({cmd:'get-user'})
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async getAllUser(): Promise<User[]> {
+    return this.userService.getAllUser();
+  }
+
+  @MessagePattern({ cmd: 'get-user' })
   async getUser(@Payload() data: any, @Ctx() context: RmqContext) {
     const user = await this.userService.findUserById(data);
     delete user.salt;
     delete user.password;
-    return user
+    return user;
   }
-
-
 }

@@ -1,7 +1,7 @@
-import { Input } from "@material-tailwind/react";
+import { Button, Input } from "@material-tailwind/react";
 import { useEffect, useState } from "react";
 
-export default function ChatBot({ socket, user }: any) {
+export default function ChatBot({ socket, user, setShowChatBox }: any) {
 	const [roomId, setRoomId] = useState<string>("");
 	const [chat, setChat] = useState<string>("");
 	const [listChat, setListChat] = useState<any>([]);
@@ -10,11 +10,12 @@ export default function ChatBot({ socket, user }: any) {
 	// use effect untuk emit msg dan join room
 	useEffect(() => {
 		socket.on("getChat", (data: any) => setIncomingChat(data));
+		socket.on("getRoom", (data: string) => setRoomId(data));
 	}, []);
 
-	function joinRoom() {
-		socket.emit("joinRoom", roomId);
-	}
+	// function joinRoom() {
+	// 	socket.emit("joinRoom", roomId);
+	// }
 
 	function sendChat() {
 		socket.emit("sendChat", {
@@ -36,6 +37,7 @@ export default function ChatBot({ socket, user }: any) {
 
 	return (
 		<div className="border">
+			<button onClick={() => setShowChatBox(false)}>close</button>
 			<div>Chatbox</div>
 			<div className="chat-box w-full">
 				<ul>
@@ -61,13 +63,13 @@ export default function ChatBot({ socket, user }: any) {
 				onChange={({ target }) => setChat(target.value)}
 			/>
 			<button onClick={sendChat}>send</button>
-			<Input
+			{/* <Input
 				variant="outlined"
 				placeholder="input room id"
 				value={roomId || ""}
 				onChange={({ target }) => setRoomId(target.value)}
 			/>
-			<button onClick={joinRoom}>join room</button>
+			<button onClick={joinRoom}>join room</button> */}
 		</div>
 	);
 }

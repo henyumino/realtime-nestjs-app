@@ -12,11 +12,11 @@ export default function User() {
 	const navigate = useNavigate();
 	const [isConnected, setIsConnected] = useState(socket.connected);
 	const [onlineUser, setOnlineUser] = useState<any>();
+	const [showChatBox, setShowChatBox] = useState(false);
 
 	const getOnlineUser = () => {
 		socket.emit("getOnlineUser", (data: any) => console.log(data));
 	};
-
 
 	useEffect(() => {
 		const getUser = async () => {
@@ -36,7 +36,19 @@ export default function User() {
 			}
 		};
 		getUser();
-		socket.on("onlineUser", (data) => setOnlineUser(data));
+		// socket.on("onlineUser", (data) => setOnlineUser(data));
+		const getAllUser = async () => {
+			try {
+				const res = await axios.get("http://localhost:5000/users");
+				if (res.status === 200) {
+					setOnlineUser(res.data);
+					// console.log(res.data);
+				}
+			} catch (error) {
+				console.log(error);
+			}
+		};
+		getAllUser();
 	}, []);
 
 	useEffect(() => {
@@ -54,14 +66,10 @@ export default function User() {
 		};
 	}, [user]);
 
-  function createRoom(userId: number, userSocket: string){
-    const data = {
-      userSocket, userId
-    }
-    // console.log(data)
-    socket.emit('createRoom', (data: any) => console.log(data))
-  }
-
+	function joinRoom(userId: number, anotherUserId: string) {
+		setShowChatBox(true);
+		socket.emit("joinRoom", { userId, anotherUserId });
+	}
 
 	return (
 		<>
@@ -69,7 +77,7 @@ export default function User() {
 			<br />
 			connection status: {JSON.stringify(isConnected)}
 			<br />
-      <button onClick={getOnlineUser}>get online user</button>
+			<button onClick={getOnlineUser}>get online user</button>
 			<Button
 				onClick={() => {
 					localStorage.removeItem("access_token");
@@ -83,16 +91,32 @@ export default function User() {
 			<ul className="list-disc pl-6">
 				{onlineUser &&
 					onlineUser.map((el: any) => {
-            if(el.id !== user.id){
-              return <li key={el.id}>{el.fullname} <a onClick={() => createRoom(el.id, el.socket_id)}>start chat</a></li>
-            }
-          })}
+						if (el.id !== user.id) {
+							return (
+								<li key={el.id}>
+									{el.fullname}{" "}
+									<a
+										onClick={() => joinRoom(user.id, el.id)}
+										className="text-gray-500"
+									>
+										open chat
+									</a>
+								</li>
+							);
+						}
+					})}
 			</ul>
-      <div className="w-1/4 ml-4">
-        <ChatBot socket={socket} user={user} />
-      </div>
-      {/* <button onClick={createRoom}>test</button> */}
+			{showChatBox && (
+				<div className="w-1/4 ml-4">
+					<ChatBot
+						socket={socket}
+						user={user}
+						setShowChatBox={setShowChatBox}
+					/>
+				</div>
+			)}
+			{/* ketika klik start chat show chat bax dan join ke room */}
+			{/* <button onClick={createRoom}>test</button> */}
 		</>
 	);
 }
-

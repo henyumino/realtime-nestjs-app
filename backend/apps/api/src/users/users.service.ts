@@ -9,12 +9,11 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { ClientProxy } from '@nestjs/microservices';
 import { Observable, timeout } from 'rxjs';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    private prisma: PrismaService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   private logger = new Logger('UserService');
 
@@ -90,9 +89,18 @@ export class UsersService {
       },
     });
 
-    console.log(user)
+    console.log(user);
 
     return user;
   }
 
+  async getAllUser(): Promise<any> {
+    const user = await this.prisma.user.findMany();
+    const userSanitize = user.map((user) => {
+      delete user.password;
+      delete user.salt;
+      return user;
+    });
+    return userSanitize;
+  }
 }

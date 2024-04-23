@@ -13,13 +13,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
   password  String
   fullname  String?
   salt      String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Room      Room[]
+  Chat      Chat[]
+}
+
+model Room {
+  id     Int    @id @default(autoincrement())
+  roomId String
+  user   User   @relation(fields: [userId], references: [id])
+  userId Int
+  type   Int
+}
+
+model Chat {
+  id        Int      @id @default(autoincrement())
+  body      String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  roomId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

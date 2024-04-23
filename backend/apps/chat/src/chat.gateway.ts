@@ -20,7 +20,10 @@ export class ChatGateway {
   @WebSocketServer()
   server: Server;
 
-  constructor(@Inject('API_SERVICE') private apiClient: ClientProxy) {}
+  constructor(
+    @Inject('API_SERVICE') private apiClient: ClientProxy,
+    private prisma: PrismaService,
+  ) {}
 
   private logger = new Logger('chat gateway');
 
@@ -34,6 +37,7 @@ export class ChatGateway {
     @ConnectedSocket() client: Socket,
   ) {
     // add user ketika on masuk ke app
+    // TODO isi validasi jika data kosong
     const res = this.apiClient
       .send({ cmd: 'get-user' }, data.id)
       .pipe(timeout(5000));
@@ -72,28 +76,33 @@ export class ChatGateway {
 
   // join room for private chat
   @SubscribeMessage('joinRoom')
-  createRoom(@MessageBody() data: any, @ConnectedSocket() socket: Socket) {
-    socket.join(data);
-    console.log(`socket ${socket.id} room ${data} joined`);
+  async createRoom(
+    @MessageBody() data: any,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    // NOTE: 1 private | 2 group
+    // check room jika tidak ada create room baru
+    const room = await this.prisma.$queryRaw`
+    SELECT roomId
+    FROM Room
+    WHERE userId IN (${data.userId},${data.anotherUserId})
+    GROUP BY roomId
+    HAVING COUNT(DISTINCT userId) = 2;
+    `;
+
+    const roomId = room[0].roomId;
+    console.log('roomid:', roomId);
+    socket.emit('getRoom', roomId);
+    socket.join(roomId); // data -> room
+    console.log(`socket ${socket.id} room ${roomId} joined`);
   }
 
   //send private msg
   @SubscribeMessage('sendChat')
   sendPrivateMsg(@MessageBody() data: any, @ConnectedSocket() socket: Socket) {
     // emit private chat dari sini
-    console.log(data);
-    this.server.to(data.roomId).emit('getChat', data);
+    console.log('sendchat:', data);
+    this.server.to('123').emit('getChat', data);
+    // TODO fitur save chat ke db
   }
-
-  // @SubscribeMessage('getChat')
-  // getPrivateChat(@MessageBody() data: any, @ConnectedSocket() socket: Socket){
-
-  // }
 }
-
-/* 
-  TODO
-  flowchart private chat:
-  1. disamping user list ada tombol private chat ketika diklik maka akan request ke server untuk membuat 1 room berdasarkan 2 user yang akan join 
-  2. maka gateway.ts akan membuat room dan menjoinkan 2 user tersebut
-*/
