@@ -1,4 +1,5 @@
 import { Button, Input } from "@material-tailwind/react";
+import axios from "axios";
 import { useEffect, useState } from "react";
 
 export default function ChatBot({ socket, user, setShowChatBox }: any) {
@@ -13,15 +14,23 @@ export default function ChatBot({ socket, user, setShowChatBox }: any) {
 		socket.on("getRoom", (data: string) => setRoomId(data));
 	}, []);
 
-	// function joinRoom() {
-	// 	socket.emit("joinRoom", roomId);
-	// }
+	useEffect(() => {
+		async function getPrivateChat() {
+			const res = await axios.get(`http://localhost:5001/chat/${roomId}`);
+			if (res.status == 200) {
+				setListChat([...listChat, ...res.data]);
+			}
+		}
+		if (roomId !== "") {
+			getPrivateChat();
+		}
+	}, [roomId]);
 
 	function sendChat() {
 		socket.emit("sendChat", {
 			userId: user.id,
 			username: user.fullname,
-			chat: chat,
+			body: chat,
 			roomId: roomId,
 		});
 		setChat("");
@@ -50,7 +59,8 @@ export default function ChatBot({ socket, user, setShowChatBox }: any) {
 										: `text-left`
 								}
 							>
-								{el.username} <br /> {el.chat}
+								{el?.username} {el.user && el?.user.fullname}{" "}
+								<br /> {el.body}
 							</div>
 						</li>
 					))}

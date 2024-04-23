@@ -89,9 +89,8 @@ export class ChatGateway {
     GROUP BY roomId
     HAVING COUNT(DISTINCT userId) = 2;
     `;
-
+    // TODO: buat kondisi jika room tidak ada maka create room
     const roomId = room[0].roomId;
-    console.log('roomid:', roomId);
     socket.emit('getRoom', roomId);
     socket.join(roomId); // data -> room
     console.log(`socket ${socket.id} room ${roomId} joined`);
@@ -99,10 +98,20 @@ export class ChatGateway {
 
   //send private msg
   @SubscribeMessage('sendChat')
-  sendPrivateMsg(@MessageBody() data: any, @ConnectedSocket() socket: Socket) {
+  async sendPrivateMsg(
+    @MessageBody() data: any,
+    @ConnectedSocket() socket: Socket,
+  ) {
     // emit private chat dari sini
     console.log('sendchat:', data);
-    this.server.to('123').emit('getChat', data);
-    // TODO fitur save chat ke db
+    this.server.to(data.roomId).emit('getChat', data);
+    const res = await this.prisma.chat.create({
+      data: {
+        body: data.body,
+        userId: data.userId,
+        roomId: data.roomId,
+      },
+    });
+    console.log(res);
   }
 }

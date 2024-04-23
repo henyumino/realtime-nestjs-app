@@ -1,3 +1,4 @@
+import { PrismaService } from '@app/common';
 import { Inject, Injectable } from '@nestjs/common';
 import {
   ClientProxy,
@@ -10,8 +11,21 @@ import { Observable } from 'rxjs';
 
 @Injectable()
 export class ChatService {
-  // constructor(@Inject('API_SERVICE') private readonly apiClient: ClientProxy) {}
+  constructor(private prisma: PrismaService) {}
   getHello(): string {
     return 'Hello World!';
+  }
+
+  async getPrivateChat(roomId: string) {
+    const res = await this.prisma.chat.findMany({
+      where: {
+        roomId: roomId,
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    return res;
   }
 }

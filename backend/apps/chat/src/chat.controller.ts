@@ -1,13 +1,15 @@
 import {
+  Body,
   Controller,
   Get,
   Inject,
   Logger,
+  Param,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import * as bcrypt from 'bcrypt';
 import {
   ClientProxy,
   Ctx,
@@ -31,7 +33,7 @@ export class ChatController {
 
   @Get()
   async getHello() {
-    this.apiClient.emit({cmd: 'get-user'}, 'asd');
+    this.apiClient.emit({ cmd: 'get-user' }, 'asd');
     return 'success';
   }
 
@@ -43,4 +45,9 @@ export class ChatController {
     return data;
   }
 
+  @Get('chat/:roomId')
+  async getPrivateChat(@Param('roomId') roomId: string) {
+    const res = await this.chatService.getPrivateChat(roomId.toString());
+    return res;
+  }
 }
